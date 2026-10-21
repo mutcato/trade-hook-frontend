@@ -37,8 +37,6 @@ export default function StrategyBuilder() {
   const [addingTelegram, setAddingTelegram] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [testStatus, setTestStatus] = useState({});
-  const [testing, setTesting] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -138,19 +136,6 @@ export default function StrategyBuilder() {
       setError(err.message);
     } finally {
       setAddingTelegram(false);
-    }
-  }
-
-  async function testConnection(uuid) {
-    setTesting(uuid);
-    setTestStatus((prev) => ({ ...prev, [uuid]: null }));
-    try {
-      await traderApi.triggerHook(uuid);
-      setTestStatus((prev) => ({ ...prev, [uuid]: "ok" }));
-    } catch {
-      setTestStatus((prev) => ({ ...prev, [uuid]: "fail" }));
-    } finally {
-      setTesting(null);
     }
   }
 
@@ -269,9 +254,6 @@ export default function StrategyBuilder() {
               required
             />
           </div>
-          <button className="btn btn-primary btn-sm" type="button" onClick={addHook}>
-            <Icon name="plus" size={14} /> Create Webhook
-          </button>
         </div>
 
         {/* Step 1: Webhooks */}
@@ -304,24 +286,6 @@ export default function StrategyBuilder() {
                       readOnly
                       value={hookTriggerUrl(hook.uuid)}
                     />
-                    {testStatus[hook.uuid] === "ok" && (
-                      <span className="conn-status conn-ok" title="Connection OK">
-                        <Icon name="check" size={16} />
-                      </span>
-                    )}
-                    {testStatus[hook.uuid] === "fail" && (
-                      <span className="conn-status conn-fail" title="Connection failed">
-                        <Icon name="alert" size={16} />
-                      </span>
-                    )}
-                    <button
-                      className="btn btn-secondary btn-sm"
-                      type="button"
-                      disabled={testing === hook.uuid}
-                      onClick={() => testConnection(hook.uuid)}
-                    >
-                      {testing === hook.uuid ? "Testing…" : "Test Connection"}
-                    </button>
                   </div>
                 ) : (
                   <p className="editor-hint">
