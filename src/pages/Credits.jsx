@@ -23,6 +23,8 @@ export default function Credits() {
   const [error, setError] = useState("");
   const [buying, setBuying] = useState(null);
   const [awaitingPayment, setAwaitingPayment] = useState(false);
+  // The underpaid order, when a payment came in short of its invoice.
+  const [shortfall, setShortfall] = useState(null);
   const pollTimer = useRef(null);
 
   const returnedOrder = searchParams.get("order");
@@ -60,6 +62,14 @@ export default function Credits() {
       try {
         const order = await billingApi.getOrder(returnedOrder);
         if (cancelled) return;
+        // Checked before credited_at: an underpaid order has credits granted
+        // too, and the shortfall is the part the customer needs told about.
+        if (order.status === "partially_paid") {
+          setAwaitingPayment(false);
+          setShortfall(order);
+          await load();
+          return;
+        }
         if (order.credited_at) {
           setAwaitingPayment(false);
           await load();
@@ -104,6 +114,7 @@ export default function Credits() {
   }
 
   function dismissReturnBanner() {
+    setShortfall(null);
     const next = new URLSearchParams(searchParams);
     next.delete("order");
     next.delete("status");
@@ -130,6 +141,22 @@ export default function Credits() {
         <div className="success-banner">
           Waiting for the payment to confirm on-chain. This usually takes a few
           minutes — you can leave this page, your credits will be added either way.
+        </div>
+      )}
+
+      {shortfall && (
+        <div className="error-banner">
+          <strong>
+            Payment came in short — {shortfall.credits_granted} of{" "}
+            {shortfall.credits} credits added.
+          </strong>{" "}
+          We received {shortfall.actually_paid} of {shortfall.pay_amount}{" "}
+          {shortfall.pay_currency?.toUpperCase()}. The usual cause is an exchange
+          withdrawal fee being taken out of the amount sent. Sending the
+          difference to the same invoice releases the remaining credits.{" "}
+          <button className="btn btn-ghost btn-sm" onClick={dismissReturnBanner}>
+            Dismiss
+          </button>
         </div>
       )}
 
@@ -174,6 +201,13 @@ export default function Credits() {
       <div className="section-title">
         <h2>Top up</h2>
       </div>
+      <p className="muted pay-hint">
+        <Icon name="alert" size={14} />
+        Paying from an exchange? Withdrawal fees are taken out of the amount you
+        send, so withdraw the invoice amount <strong>plus the network fee</strong>{" "}
+        — otherwise the payment arrives short. Low-fee networks like USDT on TRON
+        are the safest choice.
+      </p>
       <div className="pack-grid">
         {packs.map((pack) => (
           <div className="pack-card panel panel-pad" key={pack.id}>
