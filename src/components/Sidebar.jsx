@@ -4,6 +4,7 @@ import { Icon } from "./Icons";
 const links = [
   { to: "/", label: "Dashboard", icon: "dashboard", end: true },
   { to: "/strategies", label: "Strategies", icon: "strategies" },
+  { to: "/credits", label: "Credits", icon: "coin" },
   { to: "/settings", label: "Settings", icon: "settings" },
 ];
 
@@ -16,13 +17,13 @@ export default function Sidebar({ open, onClose }) {
         aria-hidden
       />
       <aside className={`sidebar${open ? " open" : ""}`}>
-        <div className="brand">
+        <NavLink to="/" className="brand" onClick={onClose}>
           <div className="brand-mark">A</div>
           <div className="brand-text">
             <span className="brand-name">AlphaBot</span>
             <span className="brand-tag">Vigilant Trader</span>
           </div>
-        </div>
+        </NavLink>
 
         <nav className="nav-list">
           {links.map((link) => (

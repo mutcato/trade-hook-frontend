@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
+  billingApi,
   hookTriggerUrl,
   minutesToTimewindow,
   timewindowToMinutes,
@@ -37,6 +38,23 @@ export default function StrategyBuilder() {
   const [addingTelegram, setAddingTelegram] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  // null while unknown; creating a strategy needs at least one execution left.
+  const [outOfCredits, setOutOfCredits] = useState(false);
+
+  useEffect(() => {
+    if (isEdit) return;
+
+    let cancelled = false;
+    billingApi
+      .getWallet()
+      .then((wallet) => {
+        if (!cancelled) setOutOfCredits(wallet.total_available === 0);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isEdit]);
 
   useEffect(() => {
     let cancelled = false;
@@ -207,7 +225,10 @@ export default function StrategyBuilder() {
         navigate(`/strategies/${hookset.id}`);
       }
     } catch (err) {
-      fail(err.message);
+      // The server is the authority on the paywall — a balance that ran out
+      // after this page loaded still lands here.
+      if (err.status === 402) setOutOfCredits(true);
+      else fail(err.message);
     } finally {
       setSaving(false);
     }
@@ -215,6 +236,41 @@ export default function StrategyBuilder() {
 
   if (loading) {
     return <div className="loading">Loading strategy…</div>;
+  }
+
+  if (outOfCredits && !isEdit) {
+    return (
+      <>
+        <Link className="back-link" to="/strategies">
+          <Icon name="arrow-left" size={14} />
+          Back to strategies
+        </Link>
+        <div className="page-header">
+          <div>
+            <h1>Out of credits</h1>
+            <p>
+              Every strategy execution costs one credit, and your balance is
+              empty — a new strategy could not send any alerts.
+            </p>
+          </div>
+        </div>
+        <div className="empty-state">
+          <h3>Top up to keep building</h3>
+          <p>
+            Your free executions are used up. Add credits and you can create
+            strategies again right away.
+          </p>
+          <button
+            className="btn btn-primary"
+            type="button"
+            onClick={() => navigate("/credits")}
+          >
+            <Icon name="coin" size={14} />
+            <span>Buy credits</span>
+          </button>
+        </div>
+      </>
+    );
   }
 
   const cancelTo = isEdit ? `/strategies/${id}` : "/strategies";

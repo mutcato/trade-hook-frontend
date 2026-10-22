@@ -135,6 +135,13 @@ export function Icon({ name, size = 18 }) {
           <path d="M14 11a3 3 0 0 0-4.2 0l-2 2a3 3 0 0 0 4.2 4.2l1-1" />
         </svg>
       );
+    case "coin":
+      return (
+        <svg {...props}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M14.5 9.5a2.5 2.5 0 1 0 0 5" />
+        </svg>
+      );
     default:
       return null;
   }

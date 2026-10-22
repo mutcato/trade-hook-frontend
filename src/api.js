@@ -79,7 +79,12 @@ async function request(path, options = {}, retried = false) {
       handleAuthFailure();
     }
 
-    throw new Error(message);
+    // Carry the status through: callers need to tell "payment required" (402)
+    // apart from a generic failure, not just read a message.
+    const failure = new Error(message);
+    failure.status = response.status;
+    if (error.code) failure.code = error.code;
+    throw failure;
   }
 
   if (response.status === 204) return null;
@@ -131,6 +136,20 @@ export const traderApi = {
   getTelegramBotInfo: () => request("/trader/telegrams/bot_info/"),
 };
 
+export const billingApi = {
+  getWallet: () => request("/billing/wallet/"),
+  listPacks: () => request("/billing/packs/"),
+  listOrders: () => request("/billing/orders/"),
+  getOrder: (uuid) => request(`/billing/orders/${uuid}/`),
+  /** Opens a crypto invoice for a pack; the response carries `invoice_url`. */
+  createOrder: (packId) =>
+    request("/billing/orders/", {
+      method: "POST",
+      body: JSON.stringify({ pack: packId }),
+    }),
+  listLedger: () => request("/billing/ledger/"),
+};
+
 export function hookTriggerUrl(hookId) {
   const origin =
     typeof window !== "undefined" && window.location?.origin
@@ -158,6 +177,21 @@ export function formatTime(isoDate) {
     minute: "2-digit",
     second: "2-digit",
     fractionalSecondDigits: 3,
+  });
+}
+
+export function formatUsd(amount) {
+  const value = Number(amount);
+  if (!Number.isFinite(value)) return "—";
+  return value.toLocaleString("en-US", { style: "currency", currency: "USD" });
+}
+
+export function formatDate(isoDate) {
+  if (!isoDate) return "—";
+  return new Date(isoDate).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
   });
 }
 

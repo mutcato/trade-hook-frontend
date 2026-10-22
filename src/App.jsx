@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from "./components/AppLayout";
 import { useAuth } from "./context/AuthContext";
+import Credits from "./pages/Credits";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Settings from "./pages/Settings";
@@ -31,6 +32,8 @@ export default function App() {
         <Route path="strategies/new" element={<StrategyBuilder />} />
         <Route path="strategies/:id/edit" element={<StrategyBuilder />} />
         <Route path="strategies/:id" element={<StrategyDetail />} />
+        {/* Also the provider's return target — see success_url in billing.services. */}
+        <Route path="credits" element={<Credits />} />
         <Route path="settings" element={<Settings />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
