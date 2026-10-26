@@ -4,6 +4,7 @@ import { Icon } from "./Icons";
 const links = [
   { to: "/", label: "Dashboard", icon: "dashboard", end: true },
   { to: "/strategies", label: "Strategies", icon: "strategies" },
+  { to: "/deliveries", label: "Deliveries", icon: "link" },
   { to: "/credits", label: "Credits", icon: "coin" },
   { to: "/settings", label: "Settings", icon: "settings" },
 ];

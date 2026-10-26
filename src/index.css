@@ -1474,6 +1474,101 @@ img {
   margin-bottom: 0.2rem;
 }
 
+/* —— Deliveries —— */
+.delivery-list {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.delivery-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+
+.delivery-item:last-child {
+  border-bottom: none;
+}
+
+.delivery-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-top: 0.45rem;
+  flex-shrink: 0;
+  background: var(--success);
+}
+
+.delivery-item.failed .delivery-dot {
+  background: var(--danger);
+}
+
+.delivery-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.delivery-error {
+  margin-top: 0.25rem;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  color: var(--danger);
+  overflow-wrap: anywhere;
+}
+
+.delivery-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+}
+
+@media (max-width: 620px) {
+  .delivery-item {
+    flex-wrap: wrap;
+  }
+
+  .delivery-meta {
+    width: 100%;
+    padding-left: 1.5rem;
+  }
+}
+
+/* —— Channel health —— */
+.channel-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-sm);
+  background: var(--warning-soft);
+  color: var(--warning);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.channel-warning svg {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.channel-warning a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.stream-item.failed .event > strong {
+  color: var(--danger);
+}
+
 /* —— Credits —— */
 .credit-chip {
   display: inline-flex;

@@ -130,6 +130,15 @@ export const traderApi = {
     request(`/trader/trades/${id}/`, { method: "PATCH", body: JSON.stringify(data) }),
   deleteTrade: (id) => request(`/trader/trades/${id}/`, { method: "DELETE" }),
 
+  /** Delivery history, newest first. Cursor-paginated: {results, next}. */
+  listNotificationLogs: ({ failuresOnly = false } = {}) =>
+    request(
+      `/trader/notification-logs/${failuresOnly ? "?success=false" : ""}`,
+    ),
+  /** Follows a `next` cursor from a previous page. */
+  listNotificationLogsPage: (url) =>
+    request(url.replace(/^.*\/api/, "")),
+
   listTelegrams: () => request("/trader/telegrams/"),
   createTelegram: (data) =>
     request("/trader/telegrams/", { method: "POST", body: JSON.stringify(data) }),

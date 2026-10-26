@@ -6,7 +6,7 @@ import {
   timewindowToMinutes,
   traderApi,
 } from "../api";
-import { StatusBadge } from "../components/Icons";
+import { Icon, StatusBadge } from "../components/Icons";
 
 function hookProgress(hooks, timewindow) {
   if (!hooks.length) return 0;
@@ -18,6 +18,7 @@ function ExecutionCard({ strategy }) {
   const minutes = timewindowToMinutes(strategy.timewindow);
   const progress = hookProgress(strategy.hooks);
   const pairLabel = strategy.pairs[0] || "—";
+  const deadChannels = (strategy.channels || []).filter((c) => !c.is_healthy);
 
   return (
     <article className={`execution-card status-${strategy.status}`}>
@@ -85,6 +86,19 @@ function ExecutionCard({ strategy }) {
         </div>
       )}
 
+      {deadChannels.length > 0 && (
+        <div className="channel-warning">
+          <Icon name="alert" size={14} />
+          <span>
+            {deadChannels.length === 1
+              ? `Alerts are not reaching "${deadChannels[0].name}"`
+              : `Alerts are not reaching ${deadChannels.length} channels`}
+            {" — "}
+            <Link to="/deliveries">check delivery</Link>
+          </span>
+        </div>
+      )}
+
       {strategy.status === "idle" && strategy.hooks.length > 0 && (
         <p className="muted" style={{ margin: "0.5rem 0 0", fontSize: "0.85rem" }}>
           Waiting for first webhook signal within the {minutes}m window.
@@ -105,6 +119,24 @@ function buildStream(strategies) {
           type: "SIGNAL RECEIVED",
           at: h.triggered_at,
           message: `Webhook "${h.name || h.id}" triggered successfully.`,
+        });
+      }
+    }
+    for (const c of s.channels || []) {
+      // A partial delivery still costs a full credit, so a channel that stopped
+      // working has to be visible or it goes unnoticed while the owner pays.
+      if (!c.is_healthy && c.last_error_at) {
+        events.push({
+          id: `channel-${c.id}`,
+          strategy: s.name,
+          type: "DELIVERY FAILED",
+          at: c.last_error_at,
+          failed: true,
+          message: `"${c.name}" has failed ${c.failure_count} time${
+            c.failure_count === 1 ? "" : "s"
+          } in a row — ${
+            c.last_status_code ? `HTTP ${c.last_status_code}: ` : ""
+          }${c.last_error}`,
         });
       }
     }
@@ -223,7 +255,10 @@ export default function Dashboard() {
           ) : (
             <div className="stream-list">
               {stream.map((ev) => (
-                <div className="stream-item" key={ev.id}>
+                <div
+                  className={`stream-item${ev.failed ? " failed" : ""}`}
+                  key={ev.id}
+                >
                   <header>
                     <strong>{ev.strategy}</strong>
                     <span className="label-caps">Strategy target</span>
