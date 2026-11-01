@@ -43,7 +43,7 @@ export default function TopBar({ search, onSearch, onMenu, searchPlaceholder }) 
       <button className="mobile-toggle" onClick={onMenu} aria-label="Open menu">
         <Icon name="menu" />
       </button>
-      <div className="topbar-title">AlphaBot Terminal</div>
+      <div className="topbar-title">NudgeWire Terminal</div>
 
       <div className="search-wrap">
         <Icon name="search" />

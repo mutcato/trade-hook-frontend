@@ -21,8 +21,8 @@ export default function Sidebar({ open, onClose }) {
         <NavLink to="/" className="brand" onClick={onClose}>
           <div className="brand-mark">A</div>
           <div className="brand-text">
-            <span className="brand-name">AlphaBot</span>
-            <span className="brand-tag">Vigilant Trader</span>
+            <span className="brand-name">NudgeWire</span>
+            <span className="brand-tag">Vigilant Trade Assistant</span>
           </div>
         </NavLink>
 

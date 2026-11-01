@@ -1,4 +1,4 @@
-# AlphaBot Terminal (trade-hook-frontend)
+# NudgeWire Terminal (trade-hook-frontend)
 
 React frontend for the trade-hook Django API — strategy (hookset) management, TradingView webhook URLs, and live execution status.
 

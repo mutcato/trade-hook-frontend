@@ -125,11 +125,11 @@ img {
 }
 
 .brand-tag {
-  font-size: 0.62rem;
-  letter-spacing: 0.14em;
+  font-size: 0.52rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-muted);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .nav-list {

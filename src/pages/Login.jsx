@@ -56,8 +56,8 @@ export default function Login() {
         <div className="brand">
           <div className="brand-mark">A</div>
           <div className="brand-text">
-            <span className="brand-name">AlphaBot</span>
-            <span className="brand-tag">Vigilant Trader</span>
+            <span className="brand-name">NudgeWire</span>
+            <span className="brand-tag">Vigilant Trade Assistant</span>
           </div>
         </div>
         <h1>{mode === "login" ? "Welcome back" : "Create account"}</h1>
