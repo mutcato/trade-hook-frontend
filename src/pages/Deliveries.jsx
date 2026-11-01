@@ -8,8 +8,10 @@ export default function Deliveries() {
   const [next, setNext] = useState(null);
   const [failuresOnly, setFailuresOnly] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
 
   const load = useCallback(async (only) => {
     const page = await traderApi.listNotificationLogs({ failuresOnly: only });
@@ -20,18 +22,22 @@ export default function Deliveries() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setRefreshing(true);
     setError("");
     load(failuresOnly)
       .catch((err) => {
         if (!cancelled) setError(err.message);
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, [failuresOnly, load]);
+  }, [failuresOnly, load, reloadKey]);
 
   async function loadMore() {
     if (!next) return;
@@ -49,7 +55,9 @@ export default function Deliveries() {
     }
   }
 
-  if (loading) return <div className="loading">Loading…</div>;
+  if (loading && rows.length === 0) {
+    return <div className="loading">Loading deliveries…</div>;
+  }
 
   return (
     <>
@@ -62,14 +70,28 @@ export default function Deliveries() {
             not reaching.
           </p>
         </div>
-        <button
-          className={`btn btn-sm ${failuresOnly ? "btn-primary" : "btn-secondary"}`}
-          type="button"
-          onClick={() => setFailuresOnly((v) => !v)}
-        >
-          <Icon name="alert" size={14} />
-          <span>{failuresOnly ? "Showing failures" : "Failures only"}</span>
-        </button>
+        <div className="refresh-row">
+          <button
+            className={`btn btn-sm ${failuresOnly ? "btn-primary" : "btn-secondary"}`}
+            type="button"
+            aria-pressed={failuresOnly}
+            onClick={() => setFailuresOnly((v) => !v)}
+          >
+            <Icon name="alert" size={14} />
+            <span>{failuresOnly ? "Showing failures" : "Failures only"}</span>
+          </button>
+          {/* This feed does not poll, so without this the only way to see a new
+              delivery was a full page reload. */}
+          <button
+            className="btn btn-secondary btn-sm"
+            type="button"
+            disabled={refreshing || loadingMore}
+            onClick={() => setReloadKey((k) => k + 1)}
+          >
+            <Icon name="refresh" size={14} />
+            <span>{refreshing ? "Refreshing…" : "Refresh"}</span>
+          </button>
+        </div>
       </div>
 
       {error && <div className="error-banner">{error}</div>}
@@ -130,7 +152,7 @@ export default function Deliveries() {
               onClick={loadMore}
               style={{ marginTop: "1rem" }}
             >
-              {loadingMore ? "Loading…" : "Load older"}
+              {loadingMore ? "Loading…" : "Load older deliveries"}
             </button>
           )}
         </div>

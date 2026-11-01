@@ -135,10 +135,14 @@ export default function Credits() {
         </div>
       </div>
 
-      {error && <div className="error-banner">{error}</div>}
+      {error && (
+        <div className="error-banner" role="alert">
+          {error}
+        </div>
+      )}
 
       {awaitingPayment && (
-        <div className="success-banner">
+        <div className="success-banner" role="status">
           Waiting for the payment to confirm on-chain. This usually takes a few
           minutes — you can leave this page, your credits will be added either way.
         </div>

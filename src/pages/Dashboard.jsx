@@ -114,11 +114,11 @@ function buildStream(strategies) {
     for (const h of s.hooks) {
       if (h.is_triggered && h.triggered_at) {
         events.push({
-          id: `hook-${h.id}`,
+          id: `hook-${h.uuid}`,
           strategy: s.name,
           type: "SIGNAL RECEIVED",
           at: h.triggered_at,
-          message: `Webhook "${h.name || h.id}" triggered successfully.`,
+          message: `Webhook "${h.name || h.uuid}" triggered successfully.`,
         });
       }
     }
@@ -160,11 +160,17 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [strategies, setStrategies] = useState([]);
+  const [updatedAt, setUpdatedAt] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  // Bumping this re-runs the effect, which reloads and restarts the poll clock,
+  // so a manual refresh does not land right before an automatic one.
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       setLoading(true);
+      setRefreshing(true);
       setError("");
       try {
         const [hooksets, hooks, trades] = await Promise.all([
@@ -177,10 +183,14 @@ export default function Dashboard() {
           deriveStrategyStatus(hs, hooks || [], trades || [])
         );
         setStrategies(list);
+        setUpdatedAt(new Date().toISOString());
       } catch (err) {
         if (!cancelled) setError(err.message);
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     }
     load();
@@ -189,7 +199,7 @@ export default function Dashboard() {
       cancelled = true;
       clearInterval(id);
     };
-  }, []);
+  }, [reloadKey]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -214,9 +224,34 @@ export default function Dashboard() {
           <h1>Strategy Execution Status</h1>
           <p>Live view of webhook signals and trade triggers across your strategies.</p>
         </div>
+        <div className="refresh-row">
+          {/* The LIVE pill alone never said how old the numbers were. */}
+          <span className="freshness">
+            {refreshing
+              ? "Refreshing…"
+              : updatedAt
+                ? `Updated ${formatTime(updatedAt)}`
+                : ""}
+          </span>
+          <button
+            className="btn btn-secondary btn-sm"
+            type="button"
+            disabled={refreshing}
+            onClick={() => setReloadKey((k) => k + 1)}
+          >
+            <Icon name="refresh" size={14} />
+            <span>Refresh</span>
+          </button>
+        </div>
       </div>
 
-      {error && <div className="error-banner">{error}</div>}
+      {error && (
+        <div className="error-banner">
+          {strategies.length
+            ? `Live updates stopped — showing the last state received. ${error}`
+            : error}
+        </div>
+      )}
 
       <div className="dashboard-grid">
         <section>

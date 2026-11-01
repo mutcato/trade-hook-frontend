@@ -90,8 +90,8 @@ export default function Settings() {
           {profileErr && <div className="error-banner">{profileErr}</div>}
           <form onSubmit={saveProfile}>
             <div className="field">
-              <label>Email</label>
-              <input value={user?.email || ""} disabled />
+              <label htmlFor="email">Email</label>
+              <input id="email" value={user?.email || ""} disabled />
             </div>
             <div className="field-row">
               <div className="field">

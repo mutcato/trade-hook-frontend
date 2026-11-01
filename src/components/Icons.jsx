@@ -142,6 +142,29 @@ export function Icon({ name, size = 18 }) {
           <path d="M14.5 9.5a2.5 2.5 0 1 0 0 5" />
         </svg>
       );
+    case "eye":
+      return (
+        <svg {...props}>
+          <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+      );
+    case "eye-off":
+      return (
+        <svg {...props}>
+          <path d="M3 3l18 18" />
+          <path d="M10.6 6.1A9.6 9.6 0 0 1 12 6c6 0 9.5 6 9.5 6a17 17 0 0 1-2.4 3.2" />
+          <path d="M6.3 7.8A16.8 16.8 0 0 0 2.5 12S6 18 12 18a9.3 9.3 0 0 0 3.6-.7" />
+          <path d="M9.9 10.1a3 3 0 0 0 4.1 4.2" />
+        </svg>
+      );
+    case "refresh":
+      return (
+        <svg {...props}>
+          <path d="M20 11a8 8 0 1 0-2.3 5.7" />
+          <path d="M20 4.5V11h-6" />
+        </svg>
+      );
     default:
       return null;
   }

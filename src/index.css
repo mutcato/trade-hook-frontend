@@ -1849,3 +1849,199 @@ img {
     border-left: none;
   }
 }
+
+/* —— Focus visibility ——
+   Several inputs above clear their outline and signal focus with a border
+   colour alone, which disappears against the panel background. These rules
+   come last on purpose: equal specificity, so they win. */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.btn:focus-visible,
+.icon-btn:focus-visible,
+.nav-link:focus-visible,
+.avatar:focus-visible,
+.credit-chip:focus-visible,
+.back-link:focus-visible,
+.auth-switch button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.search-wrap input:focus-visible,
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible,
+.editor-input:focus-visible,
+.timewindow-input:focus-visible,
+.strategy-name-input:focus-visible,
+.url-row input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+/* A radio/checkbox inside a card label: ring the whole card, not the dot. */
+.logic-option:focus-within {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* —— Reduced motion ——
+   Every card enters with fadeUp and the live pill pulses forever; both are
+   decoration, so honour the OS setting rather than animating regardless. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* —— Confirm dialog ——
+   Replaces window.confirm() for destructive actions. */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgba(4, 7, 13, 0.72);
+  backdrop-filter: blur(3px);
+  animation: fadeUp 0.18s ease both;
+}
+
+.modal {
+  width: min(420px, 100%);
+  padding: 1.35rem 1.4rem 1.2rem;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.modal h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+}
+
+.modal p {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+/* —— Topbar freshness + notification bell —— */
+.topbar-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.bell-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.bell-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--danger);
+  color: #1a0505;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  box-shadow: 0 0 0 2px var(--bg-elevated);
+}
+
+/* —— Password reveal —— */
+.input-with-action {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-with-action input {
+  flex: 1;
+  padding-right: 2.6rem;
+}
+
+.input-reveal {
+  position: absolute;
+  right: 0.4rem;
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+}
+
+.input-reveal:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+/* —— Disabled choice card (a feature the backend does not support yet) —— */
+.logic-option.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.logic-option.is-disabled input {
+  cursor: not-allowed;
+}
+
+.soon-tag {
+  margin-left: auto;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  color: var(--text-dim);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* —— Stream / delivery refresh row —— */
+.refresh-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (max-width: 860px) {
+  .topbar-meta {
+    display: none;
+  }
+}
+
+.freshness {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

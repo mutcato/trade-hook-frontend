@@ -8,6 +8,7 @@ import {
   timewindowToMinutes,
   traderApi,
 } from "../api";
+import ConfirmDialog from "../components/ConfirmDialog";
 import { Icon, StatusBadge } from "../components/Icons";
 
 export default function StrategyDetail() {
@@ -18,6 +19,11 @@ export default function StrategyDetail() {
   const [strategy, setStrategy] = useState(null);
   const [copied, setCopied] = useState(null);
   const [triggering, setTriggering] = useState(null);
+  // Kept apart from `error`: a failed trigger must not replace the page with an
+  // error screen when the strategy itself loaded fine.
+  const [actionError, setActionError] = useState("");
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -42,34 +48,46 @@ export default function StrategyDetail() {
 
   async function copyUrl(hookId) {
     const url = hookTriggerUrl(hookId);
-    await navigator.clipboard.writeText(url);
-    setCopied(hookId);
-    setTimeout(() => setCopied(null), 1500);
+    try {
+      // Unavailable outside a secure context, and the user would otherwise see
+      // nothing happen at all.
+      await navigator.clipboard.writeText(url);
+      setCopied(hookId);
+      setTimeout(() => setCopied(null), 1500);
+    } catch {
+      setActionError("Could not copy automatically — select the URL and copy it manually.");
+    }
   }
 
   async function handleTrigger(hookId) {
     setTriggering(hookId);
+    setActionError("");
     try {
       await traderApi.triggerHook(hookId);
       await load();
     } catch (err) {
-      alert(err.message);
+      setActionError(err.message);
     } finally {
       setTriggering(null);
     }
   }
 
   async function handleDelete() {
-    if (!confirm(`Delete strategy "${strategy.name}"?`)) return;
+    setDeleting(true);
+    setActionError("");
     try {
       await traderApi.deleteHookset(strategy.id);
       navigate("/strategies");
     } catch (err) {
-      alert(err.message);
+      setActionError(err.message);
+      setDeleting(false);
+      setConfirmingDelete(false);
     }
   }
 
-  if (loading) return <div className="loading">Loading strategy…</div>;
+  if (loading && !strategy) {
+    return <div className="loading">Loading strategy…</div>;
+  }
   if (error) {
     return (
       <div>
@@ -111,12 +129,18 @@ export default function StrategyDetail() {
             <Icon name="edit" size={14} />
             Edit
           </Link>
-          <button className="btn btn-danger" type="button" onClick={handleDelete}>
+          <button
+            className="btn btn-danger"
+            type="button"
+            onClick={() => setConfirmingDelete(true)}
+          >
             <Icon name="trash" size={14} />
             Delete
           </button>
         </div>
       </div>
+
+      {actionError && <div className="error-banner">{actionError}</div>}
 
       <div className="panel panel-pad">
         <div className="detail-meta">
@@ -168,7 +192,8 @@ export default function StrategyDetail() {
                   <button
                     className="icon-btn"
                     type="button"
-                    title="Copy"
+                    title="Copy webhook URL"
+                    aria-label={`Copy the webhook URL for ${hook.name || "this hook"}`}
                     onClick={() => copyUrl(hook.uuid)}
                   >
                     <Icon name="copy" size={16} />
@@ -177,9 +202,10 @@ export default function StrategyDetail() {
                     className="btn btn-secondary btn-sm"
                     type="button"
                     disabled={triggering === hook.uuid}
+                    aria-label={`Send a test trigger to ${hook.name || "this hook"}`}
                     onClick={() => handleTrigger(hook.uuid)}
                   >
-                    {triggering === hook.uuid ? "…" : "Trigger"}
+                    {triggering === hook.uuid ? "Triggering…" : "Trigger"}
                   </button>
                 </div>
                 {copied === hook.uuid && (
@@ -197,6 +223,15 @@ export default function StrategyDetail() {
           })}
         </div>
       </section>
+
+      <ConfirmDialog
+        open={confirmingDelete}
+        title={`Delete ${strategy.name}?`}
+        body="This also removes its webhooks and trades. TradingView alerts pointing at those URLs will stop working."
+        busy={deleting}
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmingDelete(false)}
+      />
     </div>
   );
 }

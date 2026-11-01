@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { Icon } from "../components/Icons";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
@@ -9,6 +10,8 @@ export default function Login() {
   const [mode, setMode] = useState("login");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  // Typing a password blind is the usual reason a sign-in fails twice over.
+  const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -108,21 +111,32 @@ export default function Login() {
           </div>
           <div className="field">
             <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              required
-              autoComplete={mode === "login" ? "current-password" : "new-password"}
-              value={form.password}
-              onChange={(e) => update("password", e.target.value)}
-            />
+            <div className="input-with-action">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                required
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
+                value={form.password}
+                onChange={(e) => update("password", e.target.value)}
+              />
+              <button
+                className="input-reveal"
+                type="button"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
+                onClick={() => setShowPassword((v) => !v)}
+              >
+                <Icon name={showPassword ? "eye-off" : "eye"} size={16} />
+              </button>
+            </div>
           </div>
           {mode === "register" && (
             <div className="field">
               <label htmlFor="password_confirm">Confirm password</label>
               <input
                 id="password_confirm"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 required
                 autoComplete="new-password"
                 value={form.password_confirm}

@@ -296,6 +296,7 @@ export default function StrategyBuilder() {
               type="button"
               className="icon-btn strategy-name-edit"
               title="Edit name"
+              aria-label="Edit the strategy name"
               onClick={() => nameInputRef.current?.focus()}
             >
               <Icon name="edit" size={14} />
@@ -328,7 +329,8 @@ export default function StrategyBuilder() {
                   <button
                     className="icon-btn editor-icon-btn"
                     type="button"
-                    title="Remove webhook"
+                    title={hooks.length === 1 ? "A strategy needs at least one webhook" : "Remove this webhook"}
+                    aria-label={`Remove webhook ${hook.name || "(unnamed)"}`}
                     onClick={() => removeHook(hook.key)}
                     disabled={hooks.length === 1}
                   >
@@ -375,43 +377,44 @@ export default function StrategyBuilder() {
                   <Icon name="link" size={18} />
                 </span>
               </label>
-              <label className={`logic-option${triggerLogic === "any" ? " selected" : ""}`}>
+              <label
+                className="logic-option is-disabled"
+                title="Not available yet — every strategy currently requires all of its webhooks"
+              >
                 <input
                   type="radio"
                   name="triggerLogic"
                   value="any"
-                  checked={triggerLogic === "any"}
-                  onChange={() => setTriggerLogic("any")}
+                  disabled
+                  checked={false}
+                  onChange={() => {}}
                 />
-                <span>ANY webhook signals must fire</span>
-                <span className="logic-icon logic-icon-any" aria-hidden>
-                  <span className="venn" />
-                </span>
+                <span>ANY webhook signal fires it</span>
+                <span className="soon-tag">Soon</span>
               </label>
             </div>
 
-            {triggerLogic === "all" && (
-              <div className="timewindow-row">
-                <span className="timewindow-label">Maximum Signal Time Window</span>
-                <p className="timewindow-inline">
-                  All conditions must be met within{" "}
-                  <input
-                    type="number"
-                    min={1}
-                    max={1440}
-                    className="timewindow-input"
-                    value={minutes}
-                    onChange={(e) => setMinutes(e.target.value)}
-                  />{" "}
-                  minutes.
-                </p>
-              </div>
-            )}
+            <div className="timewindow-row">
+              <span className="timewindow-label" id="timewindow-label">
+                Maximum Signal Time Window
+              </span>
+              <p className="timewindow-inline">
+                All conditions must be met within{" "}
+                <input
+                  type="number"
+                  min={1}
+                  max={1440}
+                  className="timewindow-input"
+                  aria-labelledby="timewindow-label"
+                  value={minutes}
+                  onChange={(e) => setMinutes(e.target.value)}
+                />{" "}
+                minutes.
+              </p>
+            </div>
             <p className="editor-footnote">
-              {triggerLogic === "all"
-                ? "All webhooks in this strategy must fire within this window before trades execute."
-                : "Any webhook signal triggers execution immediately (UI only — backend currently requires all hooks)."}
-              {" "}Mapping: BUY → LONG, SELL → SHORT on the API.
+              Every webhook above has to fire inside this window. Miss it and the
+              count starts over — no alert is sent.
             </p>
           </div>
         </section>

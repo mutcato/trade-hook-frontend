@@ -5,6 +5,7 @@ import {
   timewindowToMinutes,
   traderApi,
 } from "../api";
+import ConfirmDialog from "../components/ConfirmDialog";
 import { Icon, StatusBadge } from "../components/Icons";
 
 export default function Strategies() {
@@ -13,6 +14,8 @@ export default function Strategies() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [strategies, setStrategies] = useState([]);
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -45,15 +48,17 @@ export default function Strategies() {
     return strategies.filter((s) => s.name.toLowerCase().includes(q));
   }, [strategies, search]);
 
-  async function handleDelete(id, name) {
-    if (!confirm(`Delete strategy "${name}"? This removes its hooks and trades.`)) {
-      return;
-    }
+  async function confirmDelete() {
+    setDeleting(true);
+    setError("");
     try {
-      await traderApi.deleteHookset(id);
-      setStrategies((prev) => prev.filter((s) => s.id !== id));
+      await traderApi.deleteHookset(pendingDelete.id);
+      setStrategies((prev) => prev.filter((s) => s.id !== pendingDelete.id));
     } catch (err) {
-      alert(err.message);
+      setError(err.message);
+    } finally {
+      setDeleting(false);
+      setPendingDelete(null);
     }
   }
 
@@ -73,6 +78,16 @@ export default function Strategies() {
       </div>
 
       {error && <div className="error-banner">{error}</div>}
+
+      {strategies.length > 0 && filtered.length === 0 && (
+        <div className="empty-state">
+          <h3>No strategies match this search</h3>
+          <p>
+            Nothing here is named “{search}”. Clear the search box to see all{" "}
+            {strategies.length} strategies.
+          </p>
+        </div>
+      )}
 
       <div className="strategy-grid">
         {filtered.map((s, i) => (
@@ -128,7 +143,8 @@ export default function Strategies() {
                 <button
                   className="icon-btn"
                   type="button"
-                  title="Edit"
+                  title={`Edit ${s.name}`}
+                  aria-label={`Edit ${s.name}`}
                   onClick={() => navigate(`/strategies/${s.id}/edit`)}
                 >
                   <Icon name="edit" size={16} />
@@ -136,8 +152,9 @@ export default function Strategies() {
                 <button
                   className="icon-btn"
                   type="button"
-                  title="Delete"
-                  onClick={() => handleDelete(s.id, s.name)}
+                  title={`Delete ${s.name}`}
+                  aria-label={`Delete ${s.name}`}
+                  onClick={() => setPendingDelete(s)}
                 >
                   <Icon name="trash" size={16} />
                 </button>
@@ -160,6 +177,15 @@ export default function Strategies() {
           </div>
         </button>
       </div>
+
+      <ConfirmDialog
+        open={Boolean(pendingDelete)}
+        title={`Delete ${pendingDelete?.name || "strategy"}?`}
+        body="This also removes its webhooks and trades. TradingView alerts pointing at those URLs will stop working."
+        busy={deleting}
+        onConfirm={confirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
     </div>
   );
 }
